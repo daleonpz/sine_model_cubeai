@@ -1,0 +1,10 @@
+sine_ai.c:306:9:sine_ai_configure_activations	24	static
+sine_ai.c:337:9:sine_ai_configure_weights	24	static
+sine_ai.c:375:9:ai_sine_ai_get_info	136	static
+sine_ai.c:420:9:ai_sine_ai_get_report	136	static
+sine_ai.c:466:10:ai_sine_ai_get_error	16	static
+sine_ai.c:472:10:ai_sine_ai_create	24	static
+sine_ai.c:482:11:ai_sine_ai_destroy	16	static
+sine_ai.c:488:9:ai_sine_ai_init	24	static
+sine_ai.c:505:8:ai_sine_ai_run	24	static
+sine_ai.c:512:8:ai_sine_ai_forward	16	static
