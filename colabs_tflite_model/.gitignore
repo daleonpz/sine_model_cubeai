@@ -2,3 +2,5 @@ build
 cscope.*
 tags
 *.swp
+*.su
+*.obj
