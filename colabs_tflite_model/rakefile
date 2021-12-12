@@ -160,7 +160,7 @@ CLI="#{CLI_PATH}/STM32_Programmer_CLI -c port=swd freq=4000"
 # 
 
 task :flash => :binary do
-    sh "#{CLI}  -w #{TARGET}.bin 0x08000000  -rst"
+    quiet_sh "#{CLI}  -w #{TARGET}.bin 0x08000000  -rst"
 end
 
 CLEAN.include( "#{BUILD_DIR}","**/*.obj","**/*.o","**/*.su"    )
