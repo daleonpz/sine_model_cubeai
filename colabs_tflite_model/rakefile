@@ -113,7 +113,7 @@ end
 
 task :build => OBJECTS do
     puts "#{BBlue}[Linking]#{Color_Off}\n"
-    quite_sh "#{GCC} -o #{TARGET}.elf  #{OBJECTS}  -l:NetworkRuntime700_CM7_GCC.a -mcpu=cortex-m7 -T\"#{LINKERFILE}\"  --specs=nosys.specs -Wl,-Map=#{TARGET}.map -Wl,--gc-sections -static -Wl,--start-group -l:NetworkRuntime700_CM7_GCC.a -Wl,--end-group -LMiddlewares/ST/AI/Lib -u_printf_float #{MORE_FLAGS} -Wl,--start-group -lc -lm -Wl,--end-group "
+    quiet_sh "#{GCC} -o #{TARGET}.elf  #{OBJECTS}  -l:NetworkRuntime700_CM7_GCC.a -mcpu=cortex-m7 -T\"#{LINKERFILE}\"  --specs=nosys.specs -Wl,-Map=#{TARGET}.map -Wl,--gc-sections -static -Wl,--start-group -l:NetworkRuntime700_CM7_GCC.a -Wl,--end-group -LMiddlewares/ST/AI/Lib -u_printf_float #{MORE_FLAGS} -Wl,--start-group -lc -lm -Wl,--end-group "
 end
 
 task :binary => :build do
@@ -163,5 +163,5 @@ task :flash => :binary do
     sh "#{CLI}  -w #{TARGET}.bin 0x08000000  -rst"
 end
 
-CLEAN.include( "#{BUILD_DIR}","**/*.obj"  )
+CLEAN.include( "#{BUILD_DIR}","**/*.obj","**/*.o","**/*.su"    )
 
