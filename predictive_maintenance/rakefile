@@ -126,6 +126,10 @@ COMPILER_PATH   = "#{TOOLCHAIN_PATH}/tools"
 COMPILER_PREFIX = "arm-none-eabi-"
 GCC             = "#{COMPILER_PATH}/bin/#{COMPILER_PREFIX}gcc" 
 
+
+
+MCPU            = "-mcpu=cortex-m4" 
+DEBUG_LEVEL     = "-g3"
 # COMPILER_OPTS   = "-mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx"
 # CFLAGS          = "-O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP"
 # MORE_FLAGS      = "-specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb"
@@ -140,6 +144,9 @@ TARGET      = "#{BUILD_DIR}/my_app"
 
 LINKERFILE = "STM32L4R9ZITx_FLASH.ld"
 
+ASM_OPTS    = "#{MCPU} #{DEBUG_LEVEL}"
+ARM_OPTS  = "-x assembler-with-cpp"
+
 ##############################################
 ## Ruby Tools on Docker
 ##############################################
@@ -153,15 +160,13 @@ task :default => :binary
 
 rule '.obj' =>  '.c' do |task|
     puts "#{BBlue}[Building C Object] #{task.name} #{Color_Off} \n"
-    quiet_sh "#{GCC} #{task.source}  #{COMPILER_OPTS} -c #{INCLUDE_LIBS_PATH} #{CFLAGS} -MF #{task.name.ext(".d")} -MT #{task.name.ext(".o")} #{MORE_FLAGS} -o #{task.name} "
+    quiet_sh "#{GCC} #{task.source}  #{COMPILER_OPTS} -c #{INCLUDE_LIBS_PATH} #{CFLAGS} -MF #{task.name.ext(".d")} -MT #{task.name.ext(".obj")} #{MORE_FLAGS} -o #{task.name} "
 end
 
 rule '.obj' => '.s' do |task|
     puts "#{BBlue}[Building S Object] #{task.name} #{Color_Off} \n"
-    quiet_sh "#{GCC} -mcpu=cortex-m4 -g3 -c -x assembler-with-cpp -MMD -MP -MF #{task.name.ext(".d")} -MT #{task.name.ext(".o")} #{MORE_FLAGS} -o #{task.name} #{task.source}"
+    quiet_sh "#{GCC} #{ASM_OPTS} -c #{ARM_OPTS} -MMD -MP -MF #{task.name.ext(".d")} -MT #{task.name.ext(".obj")} #{MORE_FLAGS} -o #{task.name} #{task.source}"
 end
-
-MORE_FLAGS      = "--specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb"
 
 ##############################################
 ## Building Process
@@ -169,7 +174,6 @@ MORE_FLAGS      = "--specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
 
 task :build => OBJECTS do
     puts "#{BBlue}[Linking]#{Color_Off}\n"
-#     quiet_sh "#{GCC} -o #{TARGET}.elf  #{OBJECTS}  -l:NetworkRuntime700_CM7_GCC.a -mcpu=cortex-m7 -T\"#{LINKERFILE}\"  --specs=nosys.specs -Wl,-Map=#{TARGET}.map -Wl,--gc-sections -static -Wl,--start-group -l:NetworkRuntime700_CM7_GCC.a -Wl,--end-group -LMiddlewares/ST/AI/Lib -u_printf_float #{MORE_FLAGS} -Wl,--start-group -lc -lm -Wl,--end-group "
     quiet_sh "#{GCC} -o #{TARGET}.elf  #{OBJECTS}   -l:libarm_cortexM4lf_math.a -mcpu=cortex-m4 -T\"#{LINKERFILE}\"  --specs=nosys.specs -Wl,-Map=#{TARGET}.map -Wl,--gc-sections -static -Wl,--start-group -l:libarm_cortexM4lf_math.a -Wl,--end-group -LDrivers/CMSIS/Lib/GCC  -u_printf_float #{MORE_FLAGS} -Wl,--start-group -lc -lm -Wl,--end-group "
 end
 
