@@ -28,6 +28,7 @@
 #include "hci_tl_interface.h"
 #include "MotionSP_Manager.h"
 #include "BLE_Manager.h"
+#include "stm32l4xx_hal.h"
 
 /** @addtogroup Projects
   * @{
