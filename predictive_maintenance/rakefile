@@ -31,21 +31,6 @@ INCLUDE_LIBS_PATH = "\
 -IMiddlewares/Third_Party/parson \
 -IPatch"
 
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Patch/STWIN_motion_sensors_ex_Patch.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Patch/ism330dhcx_Patch.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/BLE_Implementation.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/MotionSP_Manager.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/OTA.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/TargetPlatform.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/hci_tl_interface.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/main.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/stm32l4xx_hal_msp.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/stm32l4xx_it.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/usbd_cdc_interface.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/usbd_conf.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/usbd_desc.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/STM32CubeIDE/syscalls.c"
-# "Projects/STM32L4R9ZI-STWIN/Demonstrations/Predictive_Maintenance_BLE/Src/system_stm32l4xx.c"
 
 # SOURCES     = Rake::FileList["**/*.c", "**/*.s"]
 SOURCES     = Rake::FileList["Core/**/*.c", "Core/**/*.s", "Patch/**/*.c",
@@ -193,7 +178,7 @@ CLI_PATH="/home/me/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin"
 CLI="#{CLI_PATH}/STM32_Programmer_CLI "
 
 task :flash_swd => :binary do
-    quiet_sh "#{CLI}  -c port=swd freq=4000 -w #{TARGET}.bin 0x08000000  -rst"
+    quiet_sh "#{CLI}  -c port=swd freq=4000 -w #{TARGET}.bin 0x08004000 -rst" # Without bootloader
 end
 
 BOOTLOADER = "BootLoaderL4R9.bin"
