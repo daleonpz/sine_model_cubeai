@@ -25,13 +25,13 @@
 
 /*************** Debug Defines ******************/
 /* For enabling the printf on UART */
-#define PREDMNT1_ENABLE_PRINTF
+#define PREDMNT1_ENABLE_PRINTF          (1)
 
 /* For enabling connection and notification subscriptions debug */
-#define PREDMNT1_DEBUG_CONNECTION
+#define PREDMNT1_DEBUG_CONNECTION       (1)
 
 /* For enabling trasmission for notified services (except for quaternions) */
-#define PREDMNT1_DEBUG_NOTIFY_TRAMISSION
+#define PREDMNT1_DEBUG_NOTIFY_TRAMISSION   (1)
 
 /*************** Don't Change the following defines *************/
 
