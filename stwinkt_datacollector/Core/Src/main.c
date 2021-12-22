@@ -23,8 +23,8 @@
 #include <stdio.h>
 
 #include "main.h"
-#include "BLE_Manager.h"
-#include "OTA.h"
+// #include "BLE_Manager.h"
+// #include "OTA.h"
 #include "hci.h"
 //#include "sensor_service.h"
 
@@ -126,6 +126,7 @@ static volatile uint32_t SendAccGyroMag=        0;
 static volatile uint32_t SendBatteryInfo=       0;
 static volatile uint32_t t_stwin=               0;
 
+static volatile uint8_t  g_led_on           = 0;
 uint32_t NumSample= ((AUDIO_IN_CHANNELS*AUDIO_IN_SAMPLING_FREQUENCY)/1000)  * N_MS;
 
 /**
@@ -250,106 +251,88 @@ int main(void)
     /* Infinite loop */
     while (1)
     {
-        /* Led Blinking when there is not a client connected */
-        if(!connected)
-        {
-            if(!TargetBoardFeatures.LedStatus) {
-                if(!(HAL_GetTick()&0x3FF)) {
-                    LedOnTargetPlatform();
-                }
-            } else {
-                if(!(HAL_GetTick()&0x3F)) {
-                    LedOffTargetPlatform();
-                }
-            }
+        if ( !g_led_on ) {
+           LedOnTargetPlatform();
         }
-
-        if(set_connectable){     
-            if(NecessityToSaveMetaDataManager) {
-                uint32_t Success = EraseMetaDataManager();
-                if(Success) {
-                    SaveMetaDataManager();
-                }
-            }
-
-            /* Now update the BLE advertize data and make the Board connectable */
-            setConnectable();
-            set_connectable = FALSE;
+        else{
+            LedOffTargetPlatform();
         }
+        Environmental_StartStopTimer();
 
         /* Enviromental Features */
-        if(BLE_Env_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            Environmental_StartStopTimer();
-            BLE_Env_NotifyEvent = BLE_NOTIFY_NOTHING;
-        }
+//         if(BLE_Env_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             Environmental_StartStopTimer();
+//             BLE_Env_NotifyEvent = BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* Audio Level Features */
+//         if(BLE_AudioLevel_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             AudioLevel_StartStopTimer(); 
+//             BLE_AudioLevel_NotifyEvent = BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* Inertial Features */
+//         if(BLE_Inertial_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             Inertial_StartStopTimer();   
+//             BLE_Inertial_NotifyEvent = BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* Battery Features */
+//         if(BLE_Battery_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             BatteryFeatures_StartStopTimer();
+//             BLE_Battery_NotifyEvent = BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* FFT Amplitude Features */
+//         if(BLE_FFT_Amplitude_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             FFTAmplitude_EnableDisableFeature();
+//             BLE_FFT_Amplitude_NotifyEvent = BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* FFT FFT Alarm Speed Status Features */
+//         if(BLE_FFTAlarmSpeedStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             FFTAlarmSpeedRMSStatus_EnableDisableFeature();      
+//             BLE_FFTAlarmSpeedStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* FFT Alarm Acc Peak Status Features */
+//         if(BLE_FFTAlarmAccPeakStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             FFTAlarmAccPeakStatus_EnableDisableFeature();
+//             BLE_FFTAlarmAccPeakStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
+//         }
+// 
+//         /* FFT Alarm Subrange Status Features */
+//         if(BLE_FFTAlarmSubrangeStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
+//         {
+//             FFTAlarmSubrangeStatus_EnableDisableFeature(); 
+//             BLE_FFTAlarmSubrangeStatus_NotifyEvent= BLE_NOTIFY_NOTHING;     
+//         }
 
-        /* Audio Level Features */
-        if(BLE_AudioLevel_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            AudioLevel_StartStopTimer(); 
-            BLE_AudioLevel_NotifyEvent = BLE_NOTIFY_NOTHING;
-        }
-
-        /* Inertial Features */
-        if(BLE_Inertial_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            Inertial_StartStopTimer();   
-            BLE_Inertial_NotifyEvent = BLE_NOTIFY_NOTHING;
-        }
-
-        /* Battery Features */
-        if(BLE_Battery_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            BatteryFeatures_StartStopTimer();
-            BLE_Battery_NotifyEvent = BLE_NOTIFY_NOTHING;
-        }
-
-        /* FFT Amplitude Features */
-        if(BLE_FFT_Amplitude_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            FFTAmplitude_EnableDisableFeature();
-            BLE_FFT_Amplitude_NotifyEvent = BLE_NOTIFY_NOTHING;
-        }
-
-        /* FFT FFT Alarm Speed Status Features */
-        if(BLE_FFTAlarmSpeedStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            FFTAlarmSpeedRMSStatus_EnableDisableFeature();      
-            BLE_FFTAlarmSpeedStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
-        }
-
-        /* FFT Alarm Acc Peak Status Features */
-        if(BLE_FFTAlarmAccPeakStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            FFTAlarmAccPeakStatus_EnableDisableFeature();
-            BLE_FFTAlarmAccPeakStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
-        }
-
-        /* FFT Alarm Subrange Status Features */
-        if(BLE_FFTAlarmSubrangeStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-        {
-            FFTAlarmSubrangeStatus_EnableDisableFeature(); 
-            BLE_FFTAlarmSubrangeStatus_NotifyEvent= BLE_NOTIFY_NOTHING;     
-        }
-
-        /* Handle user button */
-        if(ButtonPressed) {
-            ButtonCallback();
-            ButtonPressed=0;       
-        }
-
-        if(PredictiveMaintenance){
-            /* Manage the vibration analysis */
-            if (MotionSP_MainManager() != BSP_ERROR_NONE)
-                Error_Handler();
-        }
-
-        /* handle BLE event */
-        if(HCI_ProcessEvent) {
-            HCI_ProcessEvent=0;
-            hci_user_evt_proc();
-        }
+//         /* Handle user button */
+//         if(ButtonPressed) {
+//             ButtonCallback();
+//             ButtonPressed=0;       
+//         }
+// 
+//         if(PredictiveMaintenance){
+//             /* Manage the vibration analysis */
+//             if (MotionSP_MainManager() != BSP_ERROR_NONE)
+//                 Error_Handler();
+//         }
+// 
+//         /* handle BLE event */
+//         if(HCI_ProcessEvent) {
+//             HCI_ProcessEvent=0;
+//             hci_user_evt_proc();
+//         }
+//
 
         /* Environmental Data */
         if(SendEnv) {
@@ -357,26 +340,26 @@ int main(void)
             SendEnvironmentalData();
         }
 
-        /* Mic Data */
-        if (SendAudioLevel) {
-            SendAudioLevel = 0;
-            SendAudioLevelData();
-        }
-
-        /* Motion Data */
-        if(SendAccGyroMag) {
-            SendAccGyroMag=0;
-            SendMotionData();
-        }
-
-        /* Battery Info Data */
-        if(SendBatteryInfo){
-            SendBatteryInfo=0;
-            SendBatteryInfoData();
-        }
-
+//         /* Mic Data */
+//         if (SendAudioLevel) {
+//             SendAudioLevel = 0;
+//             SendAudioLevelData();
+//         }
+// 
+//         /* Motion Data */
+//         if(SendAccGyroMag) {
+//             SendAccGyroMag=0;
+//             SendMotionData();
+//         }
+// 
+//         /* Battery Info Data */
+//         if(SendBatteryInfo){
+//             SendBatteryInfo=0;
+//             SendBatteryInfoData();
+//         }
+// 
         /* Wait for Event */
-        __WFI();
+//         __WFI();
     }
 }
 
@@ -557,25 +540,26 @@ static void SendEnvironmentalData(void)
 {
     /* Pressure,Humidity, and Temperatures*/
     //if(BLE_ConnectEnvEnable)
-    {
+//     {
         int32_t PressToSend;
         uint16_t HumToSend;
         int16_t Temp2ToSend,Temp1ToSend;
 
         /* Read all the Environmental Sensors */
         ReadEnvironmentalData(&PressToSend,&HumToSend, &Temp1ToSend,&Temp2ToSend);
+        PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
 
-#ifdef PREDMNT1_DEBUG_NOTIFY_TRAMISSION
-        if(BLE_StdTerm_Service==BLE_SERV_ENABLE) {
-            BytesToWrite = sprintf((char *)BufferToWrite,"Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", (long)PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
-            Term_Update(BufferToWrite,BytesToWrite);
-        } else {
-            PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
-        }
-#endif /* PREDMNT1_DEBUG_NOTIFY_TRAMISSION */
+// #ifdef PREDMNT1_DEBUG_NOTIFY_TRAMISSION
+//         if(BLE_StdTerm_Service==BLE_SERV_ENABLE) {
+//             BytesToWrite = sprintf((char *)BufferToWrite,"Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", (long)PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
+//             Term_Update(BufferToWrite,BytesToWrite);
+//         } else {
+//             PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
+//         }
+// #endif /* PREDMNT1_DEBUG_NOTIFY_TRAMISSION */
 
-        BLE_EnvironmentalUpdate(PressToSend,HumToSend,Temp2ToSend,Temp1ToSend);
-    }
+//         BLE_EnvironmentalUpdate(PressToSend,HumToSend,Temp2ToSend,Temp1ToSend);
+//     }
 }
 
 /**
@@ -645,6 +629,8 @@ static void InitTimers(void)
 
     /* Compute the prescaler value to have TIM1 counter clock equal to 10 KHz */
     uwPrescalerValue = (uint32_t) ((SystemCoreClock / 10000) - 1); 
+
+    PREDMNT1_PRINTF("system clock ----> %d\r\n", SystemCoreClock);
 
     /* Set TIM1 instance ( Motion ) */
     TimCCHandle.Instance = TIM1;  
@@ -825,8 +811,8 @@ void SystemClock_Config(void)
 
     /* Initializes the CPU, AHB and APB busses clocks */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;  // External crystal   (32khz/16khz)
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON; //48 Mhz Source to drive usbe
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM = 2;
@@ -979,8 +965,8 @@ static unsigned char ReCallVibrationParamFromMemory(void)
  */
 static void Environmental_StartStopTimer(void)
 {
-    if( (BLE_Env_NotifyEvent == BLE_NOTIFY_SUB) &&
-            (!EnvironmentalTimerEnabled) ){
+    if(!EnvironmentalTimerEnabled) {
+//    if( (BLE_Env_NotifyEvent == BLE_NOTIFY_SUB) && (!EnvironmentalTimerEnabled) ){
         /* Start the TIM Base generation in interrupt mode (for environmental sensor) */
         if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_1) != HAL_OK){
             /* Starting Error */
@@ -994,19 +980,19 @@ static void Environmental_StartStopTimer(void)
             __HAL_TIM_SET_COMPARE(&TimCCHandle, TIM_CHANNEL_1, (uhCapture + uhCCR1_Val));
         }
 
-        EnvironmentalTimerEnabled= 1;
+        EnvironmentalTimerEnabled = 1;
     }
 
-    if( (BLE_Env_NotifyEvent == BLE_NOTIFY_UNSUB) &&
-            (EnvironmentalTimerEnabled) ){
-        /* Stop the TIM Base generation in interrupt mode (for environmental sensor) */
-        if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_1) != HAL_OK){
-            /* Stopping Error */
-            Error_Handler();
-        } 
-
-        EnvironmentalTimerEnabled= 0;
-    }
+//     if( (BLE_Env_NotifyEvent == BLE_NOTIFY_UNSUB) && (EnvironmentalTimerEnabled) ){
+//     if( EnvironmentalTimerEnabled ){
+//     /* Stop the TIM Base generation in interrupt mode (for environmental sensor) */
+//         if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_1) != HAL_OK){
+//             /* Stopping Error */
+//             Error_Handler();
+//         } 
+// 
+//         EnvironmentalTimerEnabled= 0;
+//     }
 }
 
 /**
@@ -1268,6 +1254,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
     uint32_t uhCapture;
 
+    g_led_on ^= 1; 
     /* TIM1_CH1 toggling with frequency = 2 Hz */
     if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
     {
