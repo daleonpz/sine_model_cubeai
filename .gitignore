@@ -1,5 +1,6 @@
 *.swp
-*.cscope
+cscope.*
+tags
 *.d
 *.obj
 *.su
