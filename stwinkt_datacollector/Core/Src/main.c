@@ -23,41 +23,10 @@
 #include <stdio.h>
 
 #include "main.h"
-// #include "BLE_Manager.h"
-// #include "OTA.h"
 #include "hci.h"
-//#include "sensor_service.h"
-
-/** @addtogroup Projects
- * @{
- */
-
-/** @addtogroup DEMONSTRATIONS Demonstrations
- * @{
- */
-
-/** @addtogroup PREDCTIVE_MAINTENANCE Predictive Maintenance BLE
- * @{
- */
-
-/** @addtogroup PREDCTIVE_MAINTENANCE_MAIN Predictive Maintenance main
- * @{
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_PRIVATE_DEFINE Predictive Maintenance Main Private Define
- * @{
- */
 
 /* Private define ------------------------------------------------------------*/
 #define CHECK_VIBRATION_PARAM ((uint16_t)0x1234)
-
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_IMPORTED_VARIABLES Predictive Maintenance Main Imported Variables
- * @{
- */
 
 /* Imported Variables -------------------------------------------------------------*/
 
@@ -65,14 +34,6 @@
 //extern TIM_HandleTypeDef  TimHandle;
 //extern void CDC_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 //#endif /* PREDMNT1_ENABLE_PRINTF */
-
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_EXPORTED_VARIABLES Predictive Maintenance Main Exported Variables
- * @{
- */
 
 /* Exported Variables -------------------------------------------------------------*/
 volatile uint32_t HCI_ProcessEvent=      0;
@@ -101,14 +62,6 @@ uint32_t uhCCR4_Val = DEFAULT_uhCCR4_Val;
 
 uint8_t  NodeName[8];
 
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_PRIVATE_VARIABLES Predictive Maintenance Main Private Variables
- * @{
- */
-
 /* Private variables ---------------------------------------------------------*/
 uint16_t VibrationParam[11];
 
@@ -129,14 +82,6 @@ static volatile uint32_t t_stwin=               0;
 static volatile uint8_t  g_led_on           = 0;
 uint32_t NumSample= ((AUDIO_IN_CHANNELS*AUDIO_IN_SAMPLING_FREQUENCY)/1000)  * N_MS;
 
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_PRIVATE_FUNCTIONS_PROTOTYPES Predictive Maintenance Main Private Functions Prototypes
- * @{
- */
-
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 
@@ -151,7 +96,6 @@ static void SendMotionData(void);
 static void SendAudioLevelData(void);
 static void SendBatteryInfoData(void);
 
-static void ButtonCallback(void);
 static void AudioProcess(void);
 static void AudioProcess_DB_Noise(void);
 
@@ -165,13 +109,6 @@ static void FFTAlarmSpeedRMSStatus_EnableDisableFeature(void);
 static void FFTAlarmAccPeakStatus_EnableDisableFeature(void);
 static void FFTAlarmSubrangeStatus_EnableDisableFeature(void);
 
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_PRIVATE_FUNCTIONS Predictive Maintenance Main Private Functions
- * @{
- */
 
 /**
  * @brief  Main program
@@ -226,13 +163,7 @@ int main(void)
     PREDMNT1_PRINTF("Debug Notify Trasmission Enabled\r\n\n");
 #endif /* PREDMNT1_DEBUG_NOTIFY_TRAMISSION */
 
-    /* Set Node Name */
-    ReCallNodeNameFromMemory();
-
     HCI_TL_SPI_Reset();
-
-    /* Initialize the BlueNRG stack and services */
-    BluetoothInit();
 
     /* Check the BootLoader Compliance */
     PREDMNT1_PRINTF("\r\n");
@@ -259,67 +190,27 @@ int main(void)
         }
         Environmental_StartStopTimer();
 
-        /* Enviromental Features */
-//         if(BLE_Env_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
-//             Environmental_StartStopTimer();
-//             BLE_Env_NotifyEvent = BLE_NOTIFY_NOTHING;
-//         }
-// 
 //         /* Audio Level Features */
-//         if(BLE_AudioLevel_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             AudioLevel_StartStopTimer(); 
-//             BLE_AudioLevel_NotifyEvent = BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* Inertial Features */
-//         if(BLE_Inertial_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             Inertial_StartStopTimer();   
-//             BLE_Inertial_NotifyEvent = BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* Battery Features */
-//         if(BLE_Battery_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             BatteryFeatures_StartStopTimer();
-//             BLE_Battery_NotifyEvent = BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* FFT Amplitude Features */
-//         if(BLE_FFT_Amplitude_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             FFTAmplitude_EnableDisableFeature();
-//             BLE_FFT_Amplitude_NotifyEvent = BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* FFT FFT Alarm Speed Status Features */
-//         if(BLE_FFTAlarmSpeedStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             FFTAlarmSpeedRMSStatus_EnableDisableFeature();      
-//             BLE_FFTAlarmSpeedStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* FFT Alarm Acc Peak Status Features */
-//         if(BLE_FFTAlarmAccPeakStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             FFTAlarmAccPeakStatus_EnableDisableFeature();
-//             BLE_FFTAlarmAccPeakStatus_NotifyEvent= BLE_NOTIFY_NOTHING;
-//         }
 // 
 //         /* FFT Alarm Subrange Status Features */
-//         if(BLE_FFTAlarmSubrangeStatus_NotifyEvent != BLE_NOTIFY_NOTHING)
-//         {
 //             FFTAlarmSubrangeStatus_EnableDisableFeature(); 
-//             BLE_FFTAlarmSubrangeStatus_NotifyEvent= BLE_NOTIFY_NOTHING;     
-//         }
 
-//         /* Handle user button */
-//         if(ButtonPressed) {
-//             ButtonCallback();
-//             ButtonPressed=0;       
-//         }
 // 
 //         if(PredictiveMaintenance){
 //             /* Manage the vibration analysis */
@@ -362,17 +253,6 @@ int main(void)
 //         __WFI();
     }
 }
-
-/**
- * @brief  Callback for user button
- * @param  None
- * @retval None
- */
-static void ButtonCallback(void)
-{
-    PREDMNT1_PRINTF("\r\nUser Button Pressed\r\n\r\n");
-}
-
 
 /**
  * @brief  Send Motion Data Acc/Mag/Gyro to BLE
@@ -872,45 +752,6 @@ void SystemClock_Config(void)
 }
 
 /**
- * @brief  Check if there are a valid Node Name Values in Memory and read them
- * @param  None
- * @retval unsigned char Success/Not Success
- */
-static unsigned char ReCallNodeNameFromMemory(void)
-{
-    /* ReLoad the Node Name Values from RAM */
-    unsigned char Success=0;
-
-    //Set the BLE Board Name 
-    sprintf(BlueNRG_StackValue.BoardName,"%s%c%c%c","PM1V",
-            PREDMNT1_VERSION_MAJOR,
-            PREDMNT1_VERSION_MINOR,
-            PREDMNT1_VERSION_PATCH);
-
-    /* Recall the node name Credential saved */
-    MDM_ReCallGMD(GMD_NODE_NAME,(void *)&NodeName);
-
-    if(NodeName[0] != 0x12)
-    {
-        NodeName[0]= 0x12;
-
-        for(int i=0; i<7; i++)
-            NodeName[i+1]= BlueNRG_StackValue.BoardName[i];
-        //NodeName[i+1]= DefaultBoardName[i];
-
-        MDM_SaveGMD(GMD_NODE_NAME,(void *)&NodeName);
-        NecessityToSaveMetaDataManager=1;
-    }
-    else
-    {
-        for(int i=0; i<7; i++)
-            BlueNRG_StackValue.BoardName[i]= NodeName[i+1];
-    }
-
-    return Success;
-}
-
-/**
  * @brief  Check if there are a valid Vibration Parameters Values in Memory and read them
  * @param pAccelerometer_Parameters Pointer to Accelerometer parameter structure
  * @param pMotionSP_Parameters Pointer to Board parameter structure
@@ -1360,10 +1201,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
                 MotionSP_DataReady_IRQ_Rtn();
             break;
 
-        case USER_BUTTON_PIN:
-            ButtonPressed = 1;
-            break;
-
         case GPIO_PIN_10:
             if(HAL_GetTick() - t_stwin > 4000)
             {
@@ -1372,14 +1209,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
     }
 }
-
-/**
- * @}
- */
-
-/** @defgroup PREDCTIVE_MAINTENANCE_MAIN_EXPORTED_FUNCTIONS Predictive Maintenance Main Exported Functions
- * @{
- */
 
 /**
  * @brief This function provides accurate delay (in milliseconds) based 
