@@ -179,6 +179,9 @@ int main(void)
     /* Predictive Maintenance Initialization */
     InitPredictiveMaintenance();
 
+//     Environmental_StartStopTimer();
+    Inertial_StartStopTimer();   
+
     /* Infinite loop */
     while (1)
     {
@@ -188,7 +191,7 @@ int main(void)
         else{
             LedOffTargetPlatform();
         }
-        Environmental_StartStopTimer();
+//         Environmental_StartStopTimer();
 
 //         /* Audio Level Features */
 //             AudioLevel_StartStopTimer(); 
@@ -226,10 +229,10 @@ int main(void)
 //
 
         /* Environmental Data */
-        if(SendEnv) {
-            SendEnv=0;
-            SendEnvironmentalData();
-        }
+//         if(SendEnv) {
+//             SendEnv=0;
+//             SendEnvironmentalData();
+//         }
 
 //         /* Mic Data */
 //         if (SendAudioLevel) {
@@ -238,11 +241,11 @@ int main(void)
 //         }
 // 
 //         /* Motion Data */
-//         if(SendAccGyroMag) {
-//             SendAccGyroMag=0;
-//             SendMotionData();
-//         }
-// 
+        if(SendAccGyroMag) {
+            SendAccGyroMag=0;
+            SendMotionData();
+        }
+
 //         /* Battery Info Data */
 //         if(SendBatteryInfo){
 //             SendBatteryInfo=0;
@@ -265,10 +268,6 @@ static void SendMotionData(void)
     MOTION_SENSOR_Axes_t GYR_Value;
     MOTION_SENSOR_Axes_t MAG_Value;
 
-    BLE_MANAGER_INERTIAL_Axes_t ACC_SensorValue;
-    BLE_MANAGER_INERTIAL_Axes_t GYR_SensorValue;
-    BLE_MANAGER_INERTIAL_Axes_t MAG_SensorValue;
-
     /* Reset the Acc values */
     ACC_Value.x = ACC_Value.y = ACC_Value.z =0;
 
@@ -282,34 +281,23 @@ static void SendMotionData(void)
     if(TargetBoardFeatures.AccSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(ACCELERO_INSTANCE, MOTION_ACCELERO, &ACC_Value);
+        PREDMNT1_PRINTF("Sending ACC: x=%d y=%d z=%d \r\n", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
     }
 
     /* Read the Gyro values */
     if(TargetBoardFeatures.GyroSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(GYRO_INSTANCE,MOTION_GYRO, &GYR_Value);
+//         PREDMNT1_PRINTF("Sending GYR: x=%d y=%d z=%d \r\n", GYR_Value.x/100, GYR_Value.y/100, GYR_Value.z/100); // from BLE_AccGyroMagUpdate
+        PREDMNT1_PRINTF("Sending GYR: x=%d y=%d z=%d \r\n", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
     }
 
     /* Read the Magneto values */
     if(TargetBoardFeatures.MagSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(MAGNETO_INSTANCE, MOTION_MAGNETO, &MAG_Value);
+        PREDMNT1_PRINTF("Sending MAG: x=%d y=%d z=%d \r\n", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
     }
-
-    ACC_SensorValue.x= ACC_Value.x;
-    ACC_SensorValue.y= ACC_Value.y;
-    ACC_SensorValue.z= ACC_Value.z;
-
-    GYR_SensorValue.x= GYR_Value.x;
-    GYR_SensorValue.y= GYR_Value.y;
-    GYR_SensorValue.z= GYR_Value.z;
-
-    MAG_SensorValue.x= MAG_Value.x;
-    MAG_SensorValue.y= MAG_Value.y;
-    MAG_SensorValue.z= MAG_Value.z;
-
-    /* Send the Data with BLE */
-    BLE_AccGyroMagUpdate(&ACC_SensorValue,&GYR_SensorValue,&MAG_SensorValue);
 }
 
 /**
@@ -419,27 +407,13 @@ void ReadEnvironmentalData(int32_t *PressToSend,uint16_t *HumToSend,int16_t *Tem
 static void SendEnvironmentalData(void)
 {
     /* Pressure,Humidity, and Temperatures*/
-    //if(BLE_ConnectEnvEnable)
-//     {
-        int32_t PressToSend;
-        uint16_t HumToSend;
-        int16_t Temp2ToSend,Temp1ToSend;
+    int32_t PressToSend;
+    uint16_t HumToSend;
+    int16_t Temp2ToSend,Temp1ToSend;
 
-        /* Read all the Environmental Sensors */
-        ReadEnvironmentalData(&PressToSend,&HumToSend, &Temp1ToSend,&Temp2ToSend);
-        PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
-
-// #ifdef PREDMNT1_DEBUG_NOTIFY_TRAMISSION
-//         if(BLE_StdTerm_Service==BLE_SERV_ENABLE) {
-//             BytesToWrite = sprintf((char *)BufferToWrite,"Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", (long)PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
-//             Term_Update(BufferToWrite,BytesToWrite);
-//         } else {
-//             PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
-//         }
-// #endif /* PREDMNT1_DEBUG_NOTIFY_TRAMISSION */
-
-//         BLE_EnvironmentalUpdate(PressToSend,HumToSend,Temp2ToSend,Temp1ToSend);
-//     }
+    /* Read all the Environmental Sensors */
+    ReadEnvironmentalData(&PressToSend,&HumToSend, &Temp1ToSend,&Temp2ToSend);
+    PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
 }
 
 /**
@@ -562,57 +536,6 @@ static void InitTimers(void)
     }
 }
 
-/**
- * @brief  Get hardware and firmware version
- *
- * @param  Hardware version
- * @param  Firmware version
- * @retval Status
- */
-uint8_t getBlueNRG2_Version(uint8_t *hwVersion, uint16_t *fwVersion)
-{
-    uint8_t status;
-    uint8_t hci_version, lmp_pal_version;
-    uint16_t hci_revision, manufacturer_name, lmp_pal_subversion;
-    uint8_t DTM_version_major, DTM_version_minor, DTM_version_patch, DTM_variant, BTLE_Stack_version_major, BTLE_Stack_version_minor, BTLE_Stack_version_patch, BTLE_Stack_development;
-    uint16_t DTM_Build_Number, BTLE_Stack_variant, BTLE_Stack_Build_Number;
-
-
-    status = hci_read_local_version_information(&hci_version, &hci_revision, &lmp_pal_version, 
-            &manufacturer_name, &lmp_pal_subversion);
-
-    if (status == BLE_STATUS_SUCCESS) {
-        *hwVersion = hci_revision >> 8;
-    }
-    else {
-        PREDMNT1_PRINTF("Error= %x \r\n", status);
-    }
-
-
-    status = aci_hal_get_firmware_details(&DTM_version_major,
-            &DTM_version_minor,
-            &DTM_version_patch,
-            &DTM_variant,
-            &DTM_Build_Number,
-            &BTLE_Stack_version_major,
-            &BTLE_Stack_version_minor,
-            &BTLE_Stack_version_patch,
-            &BTLE_Stack_development,
-            &BTLE_Stack_variant,
-            &BTLE_Stack_Build_Number);
-
-    if (status == BLE_STATUS_SUCCESS) {
-        *fwVersion = BTLE_Stack_version_major  << 8;  // Major Version Number
-        *fwVersion |= BTLE_Stack_version_minor << 4;  // Minor Version Number
-        *fwVersion |= BTLE_Stack_version_patch;       // Patch Version Number
-    }
-    else {
-        PREDMNT1_PRINTF("Error= %x \r\n", status);
-    }
-
-
-    return status;
-}
 
 /** @brief Predictive Maintenance Initialization
  * @param None
@@ -807,7 +730,6 @@ static unsigned char ReCallVibrationParamFromMemory(void)
 static void Environmental_StartStopTimer(void)
 {
     if(!EnvironmentalTimerEnabled) {
-//    if( (BLE_Env_NotifyEvent == BLE_NOTIFY_SUB) && (!EnvironmentalTimerEnabled) ){
         /* Start the TIM Base generation in interrupt mode (for environmental sensor) */
         if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_1) != HAL_OK){
             /* Starting Error */
@@ -824,16 +746,6 @@ static void Environmental_StartStopTimer(void)
         EnvironmentalTimerEnabled = 1;
     }
 
-//     if( (BLE_Env_NotifyEvent == BLE_NOTIFY_UNSUB) && (EnvironmentalTimerEnabled) ){
-//     if( EnvironmentalTimerEnabled ){
-//     /* Stop the TIM Base generation in interrupt mode (for environmental sensor) */
-//         if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_1) != HAL_OK){
-//             /* Stopping Error */
-//             Error_Handler();
-//         } 
-// 
-//         EnvironmentalTimerEnabled= 0;
-//     }
 }
 
 /**
@@ -895,9 +807,8 @@ static void AudioLevel_StartStopTimer(void)
  */
 static void Inertial_StartStopTimer(void)
 { 
-    if( (BLE_Inertial_NotifyEvent == BLE_NOTIFY_SUB) &&
-            (!InertialTimerEnabled) ){
-        /* Start the TIM Base generation in interrupt mode (for Acc/Gyro/Mag sensor) */
+    if( !InertialTimerEnabled ){
+    /* Start the TIM Base generation in interrupt mode (for Acc/Gyro/Mag sensor) */
         if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_3) != HAL_OK){
             /* Starting Error */
             Error_Handler();
@@ -913,16 +824,6 @@ static void Inertial_StartStopTimer(void)
         InertialTimerEnabled= 1;
     }
 
-    if( (BLE_Inertial_NotifyEvent == BLE_NOTIFY_UNSUB) &&
-            (InertialTimerEnabled) ){
-        /* Stop the TIM Base generation in interrupt mode (for Acc/Gyro/Mag sensor) */
-        if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_3) != HAL_OK){
-            /* Stopping Error */
-            Error_Handler();
-        }      
-
-        InertialTimerEnabled= 0;
-    }
 }
 
 /**
