@@ -182,15 +182,33 @@ int main(void)
 //     Environmental_StartStopTimer();
     Inertial_StartStopTimer();   
 
+
+    uint32_t num_samples_1_sek = FREQ_ACC_GYRO_MAG;
+    uint32_t samples_count = 0;
     /* Infinite loop */
     while (1)
     {
-        if ( !g_led_on ) {
-           LedOnTargetPlatform();
+
+        if ( samples_count == 0 ) {
+            PREDMNT1_PRINTF("---- NUEVO SAMPLEO \r\n");
+            PREDMNT1_PRINTF("[");
+            LedOnTargetPlatform();
+            samples_count++;
         }
-        else{
+        else if ( samples_count > num_samples_1_sek)
+        {
+            PREDMNT1_PRINTF("]\r\n");
             LedOffTargetPlatform();
+            HAL_Delay(2000); // 2sek
+            samples_count = 0;
         }
+        else {
+//         if ( !g_led_on ) {
+//            LedOnTargetPlatform();
+//         }
+//         else{
+//             LedOffTargetPlatform();
+//         }
 //         Environmental_StartStopTimer();
 
 //         /* Audio Level Features */
@@ -244,8 +262,9 @@ int main(void)
         if(SendAccGyroMag) {
             SendAccGyroMag=0;
             SendMotionData();
-        }
+            samples_count++;
 
+        }
 //         /* Battery Info Data */
 //         if(SendBatteryInfo){
 //             SendBatteryInfo=0;
@@ -254,6 +273,7 @@ int main(void)
 // 
         /* Wait for Event */
 //         __WFI();
+        }
     }
 }
 
@@ -277,27 +297,35 @@ static void SendMotionData(void)
     /* Reset the Magneto values */
     MAG_Value.x = MAG_Value.y = MAG_Value.z =0;
 
+    TargetBoardFeatures.AccSensorIsInit = 1;
+    TargetBoardFeatures.GyroSensorIsInit= 1;
+    TargetBoardFeatures.MagSensorIsInit = 0;
+
+    PREDMNT1_PRINTF("[");
+
     /* Read the Acc values */
     if(TargetBoardFeatures.AccSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(ACCELERO_INSTANCE, MOTION_ACCELERO, &ACC_Value);
-        PREDMNT1_PRINTF("Sending ACC: x=%d y=%d z=%d \r\n", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
+        PREDMNT1_PRINTF("%d, %d, %d", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
     }
 
     /* Read the Gyro values */
     if(TargetBoardFeatures.GyroSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(GYRO_INSTANCE,MOTION_GYRO, &GYR_Value);
-//         PREDMNT1_PRINTF("Sending GYR: x=%d y=%d z=%d \r\n", GYR_Value.x/100, GYR_Value.y/100, GYR_Value.z/100); // from BLE_AccGyroMagUpdate
-        PREDMNT1_PRINTF("Sending GYR: x=%d y=%d z=%d \r\n", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
+        PREDMNT1_PRINTF(", %d, %d, %d", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
+//         PREDMNT1_PRINTF("Sending GYR: %d %d %d \r\n", GYR_Value.x/100, GYR_Value.y/100, GYR_Value.z/100); // from BLE_AccGyroMagUpdate
     }
 
     /* Read the Magneto values */
     if(TargetBoardFeatures.MagSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(MAGNETO_INSTANCE, MOTION_MAGNETO, &MAG_Value);
-        PREDMNT1_PRINTF("Sending MAG: x=%d y=%d z=%d \r\n", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
+        PREDMNT1_PRINTF(", %d, %d, %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
     }
+    PREDMNT1_PRINTF("],"); // this will be parse in python 
+    // in python [[ x,y,z],] = [[x,y,z]] .. the last ',' will be ignored
 }
 
 /**
