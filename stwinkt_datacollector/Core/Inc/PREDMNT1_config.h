@@ -25,13 +25,14 @@
 
 /*************** Debug Defines ******************/
 /* For enabling the printf on UART */
-#define PREDMNT1_ENABLE_PRINTF          (1)
+#define PREDMNT1_ENABLE_PRINTF        (1)
+// #define PREDMNT1_ACTIVATE_PRINTF        (1)
 
 /* For enabling connection and notification subscriptions debug */
-#define PREDMNT1_DEBUG_CONNECTION       (1)
+// #define PREDMNT1_DEBUG_CONNECTION      (1)
 
 /* For enabling trasmission for notified services (except for quaternions) */
-#define PREDMNT1_DEBUG_NOTIFY_TRAMISSION   (1)
+// #define PREDMNT1_DEBUG_NOTIFY_TRAMISSION   (1)
 
 /*************** Don't Change the following defines *************/
 
@@ -51,6 +52,7 @@
 #define PRESSURE_INSTANCE       LPS22HH_0
 
 /* Motion Sensor Istance */
+// #define ACCELERO_INSTANCE       IIS2DH_0
 #define ACCELERO_INSTANCE       ISM330DHCX_0
 #define GYRO_INSTANCE           ISM330DHCX_0
 #define MAGNETO_INSTANCE        IIS2MDC_0
@@ -98,16 +100,23 @@
 * Serial control section *
 **************************/
 #ifdef PREDMNT1_ENABLE_PRINTF
-    #include "usbd_cdc_interface.h"
-    #define PREDMNT1_PRINTF(...) {\
-      char TmpBufferToWrite[256];\
-      int32_t TmpBytesToWrite;\
-      TmpBytesToWrite = sprintf( TmpBufferToWrite, __VA_ARGS__);\
-      CDC_Fill_Buffer(( uint8_t * )TmpBufferToWrite, (uint32_t)TmpBytesToWrite);\
-    }
+#include "usbd_cdc_interface.h"
+#define _PRINTF(...) {\
+  char TmpBufferToWrite[256];\
+  int32_t TmpBytesToWrite;\
+  TmpBytesToWrite = sprintf( TmpBufferToWrite, __VA_ARGS__);\
+  CDC_Fill_Buffer(( uint8_t * )TmpBufferToWrite, (uint32_t)TmpBytesToWrite);\
+}
+#endif
+
+
+#ifdef PREDMNT1_ACTIVATE_PRINTF
+    #define PREDMNT1_PRINTF(...) _PRINTF(__VA_ARGS__)
 #else /* PREDMNT1_ENABLE_PRINTF */
   #define PREDMNT1_PRINTF(...)
 #endif /* PREDMNT1_ENABLE_PRINTF */
+
+
 
 /* STM32 Unique ID */
 #define STM32_UUID ((uint32_t *)0x1FFF7590)
