@@ -382,6 +382,13 @@ int32_t BSP_MOTION_SENSOR_Disable(uint32_t Instance, uint32_t Function)
  */
 int32_t BSP_MOTION_SENSOR_GetAxes(uint32_t Instance, uint32_t Function, BSP_MOTION_SENSOR_Axes_t *Axes)
 {
+// #define MOTION_GYRO             1U
+// #define MOTION_ACCELERO         2U
+// #define MOTION_MAGNETO          4U
+// 
+// #define MOTION_FUNCTIONS_NBR    3U
+// #define MOTION_INSTANCES_NBR    (USE_MOTION_SENSOR_IIS2DH_0 + USE_MOTION_SENSOR_IIS2MDC_0 + USE_MOTION_SENSOR_IIS3DWB_0 + USE_MOTION_SENSOR_ISM330DHCX_0)
+// 
   int32_t ret;
 
   if (Instance >= MOTION_INSTANCES_NBR)
@@ -390,9 +397,15 @@ int32_t BSP_MOTION_SENSOR_GetAxes(uint32_t Instance, uint32_t Function, BSP_MOTI
   }
   else
   {
+
+      // if ((MotionCtx[Instance].Functions & Function) == Function)
+        // MotionCtx[ACCELERO_INSTANCE].MOTION_ACCELERO & MOTION_ACCELERO == MOTION_ACCELERO ) 
     if ((MotionCtx[Instance].Functions & Function) == Function)
     {
+        // static uint32_t FunctionIndex[5] = {0,0,1,1,2};
       if (MotionFuncDrv[Instance][FunctionIndex[Function]]->GetAxes(MotionCompObj[Instance], Axes) != BSP_ERROR_NONE)
+          // MotionFuncDrv[ACCELERO_INSTANCE][FunctionIndex[MOTION_ACCELERO]] ->
+          // MotionFuncDrv[ACCELERO_INSTANCE][1] -> GetAxes(MotionCompObj[ACCELERO_INSTANCE] , Axes)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
