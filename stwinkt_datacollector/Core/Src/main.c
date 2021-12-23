@@ -190,16 +190,16 @@ int main(void)
     {
 
         if ( samples_count == 0 ) {
-            PREDMNT1_PRINTF("---- NUEVO SAMPLEO \r\n");
-            PREDMNT1_PRINTF("[");
+//             _PRINTF("[");
             LedOnTargetPlatform();
             samples_count++;
         }
         else if ( samples_count > num_samples_1_sek)
         {
-            PREDMNT1_PRINTF("]\r\n");
+//             _PRINTF("]\r\n");
+            _PRINTF("\r\n");
             LedOffTargetPlatform();
-            HAL_Delay(2000); // 2sek
+            HAL_Delay(1000); // 2sek
             samples_count = 0;
         }
         else {
@@ -298,23 +298,23 @@ static void SendMotionData(void)
     MAG_Value.x = MAG_Value.y = MAG_Value.z =0;
 
     TargetBoardFeatures.AccSensorIsInit = 1;
-    TargetBoardFeatures.GyroSensorIsInit= 1;
+    TargetBoardFeatures.GyroSensorIsInit= 0;
     TargetBoardFeatures.MagSensorIsInit = 0;
 
-    PREDMNT1_PRINTF("[");
+//     _PRINTF("[");
 
     /* Read the Acc values */
     if(TargetBoardFeatures.AccSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(ACCELERO_INSTANCE, MOTION_ACCELERO, &ACC_Value);
-        PREDMNT1_PRINTF("%d, %d, %d", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
+        _PRINTF("%d %d %d ", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
     }
 
     /* Read the Gyro values */
     if(TargetBoardFeatures.GyroSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(GYRO_INSTANCE,MOTION_GYRO, &GYR_Value);
-        PREDMNT1_PRINTF(", %d, %d, %d", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
+        _PRINTF("%d %d %d ", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
 //         PREDMNT1_PRINTF("Sending GYR: %d %d %d \r\n", GYR_Value.x/100, GYR_Value.y/100, GYR_Value.z/100); // from BLE_AccGyroMagUpdate
     }
 
@@ -322,9 +322,11 @@ static void SendMotionData(void)
     if(TargetBoardFeatures.MagSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(MAGNETO_INSTANCE, MOTION_MAGNETO, &MAG_Value);
-        PREDMNT1_PRINTF(", %d, %d, %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
+        _PRINTF("%d %d %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
+
+//         _PRINTF(", %d, %d, %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
     }
-    PREDMNT1_PRINTF("],"); // this will be parse in python 
+//     _PRINTF("],"); // this will be parse in python 
     // in python [[ x,y,z],] = [[x,y,z]] .. the last ',' will be ignored
 }
 
@@ -363,23 +365,23 @@ static void AudioProcess_DB_Noise(void)
  * @param  None
  * @retval None
  */
-static void SendAudioLevelData(void)
-{
-    int32_t NumberMic;
-    uint16_t DBNOISE_Value_Ch[AUDIO_IN_CHANNELS];
-
-    for(NumberMic=0;NumberMic<(AUDIO_IN_CHANNELS);NumberMic++) {
-        DBNOISE_Value_Ch[NumberMic] = 0;
-
-        RMS_Ch[NumberMic] /= ((float)(NumSample/AUDIO_IN_CHANNELS)*ALGO_PERIOD_AUDIO_LEVEL);
-
-        DBNOISE_Value_Ch[NumberMic] = (uint16_t)((120.0f - 20 * log10f(32768 * (1 + 0.25f * (AUDIO_VOLUME_INPUT /*AudioInVolume*/ - 4))) + 10.0f * log10f(RMS_Ch[NumberMic])) * 0.3f + DBNOISE_Value_Old_Ch[NumberMic] * 0.7f);
-        DBNOISE_Value_Old_Ch[NumberMic] = DBNOISE_Value_Ch[NumberMic];
-        RMS_Ch[NumberMic] = 0.0f;
-    }
-
-    BLE_AudioLevelUpdate(DBNOISE_Value_Ch, AUDIO_IN_CHANNELS);
-}
+// static void SendAudioLevelData(void)
+// {
+//     int32_t NumberMic;
+//     uint16_t DBNOISE_Value_Ch[AUDIO_IN_CHANNELS];
+// 
+//     for(NumberMic=0;NumberMic<(AUDIO_IN_CHANNELS);NumberMic++) {
+//         DBNOISE_Value_Ch[NumberMic] = 0;
+// 
+//         RMS_Ch[NumberMic] /= ((float)(NumSample/AUDIO_IN_CHANNELS)*ALGO_PERIOD_AUDIO_LEVEL);
+// 
+//         DBNOISE_Value_Ch[NumberMic] = (uint16_t)((120.0f - 20 * log10f(32768 * (1 + 0.25f * (AUDIO_VOLUME_INPUT /*AudioInVolume*/ - 4))) + 10.0f * log10f(RMS_Ch[NumberMic])) * 0.3f + DBNOISE_Value_Old_Ch[NumberMic] * 0.7f);
+//         DBNOISE_Value_Old_Ch[NumberMic] = DBNOISE_Value_Ch[NumberMic];
+//         RMS_Ch[NumberMic] = 0.0f;
+//     }
+// 
+//     BLE_AudioLevelUpdate(DBNOISE_Value_Ch, AUDIO_IN_CHANNELS);
+// }
 
 /**
  * @brief  Read Environmental Data (Temperature/Pressure/Humidity) from sensor
@@ -441,7 +443,7 @@ static void SendEnvironmentalData(void)
 
     /* Read all the Environmental Sensors */
     ReadEnvironmentalData(&PressToSend,&HumToSend, &Temp1ToSend,&Temp2ToSend);
-    PREDMNT1_PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
+    _PRINTF("Sending: Press=%ld Hum=%d Temp1=%d Temp2=%d \r\n", PressToSend, HumToSend, Temp1ToSend, Temp2ToSend);
 }
 
 /**
@@ -782,50 +784,50 @@ static void Environmental_StartStopTimer(void)
  * @param  None
  * @retval None
  */
-static void AudioLevel_StartStopTimer(void)
-{
-    if( (BLE_AudioLevel_NotifyEvent == BLE_NOTIFY_SUB) &&
-            (!AudioLevelTimerEnabled) ) {
-        int32_t Count;
-
-        InitMics(AUDIO_IN_SAMPLING_FREQUENCY, AUDIO_VOLUME_INPUT);
-        AudioLevelEnable= 1;
-
-        for(Count=0;Count<AUDIO_IN_CHANNELS;Count++) {
-            RMS_Ch[Count]=0;
-            DBNOISE_Value_Old_Ch[Count] =0;
-        }
-
-        /* Start the TIM Base generation in interrupt mode (for mic audio level) */
-        if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_2) != HAL_OK){
-            /* Starting Error */
-            Error_Handler();
-        }
-
-        /* Set the new Capture compare value */
-        {
-            uint32_t uhCapture = __HAL_TIM_GET_COUNTER(&TimCCHandle);
-            /* Set the Capture Compare Register value (for mic audio level) */
-            __HAL_TIM_SET_COMPARE(&TimCCHandle, TIM_CHANNEL_2, (uhCapture + uhCCR2_Val));
-        }
-
-        AudioLevelTimerEnabled= 1;
-    }
-
-    if( (BLE_AudioLevel_NotifyEvent == BLE_NOTIFY_UNSUB) &&
-            (AudioLevelTimerEnabled) ) {
-        DeInitMics();
-        AudioLevelEnable= 0;
-
-        /* Stop the TIM Base generation in interrupt mode (for mic audio level) */
-        if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_2) != HAL_OK){
-            /* Stopping Error */
-            Error_Handler();
-        }  
-
-        AudioLevelTimerEnabled= 0;
-    }
-}
+// static void AudioLevel_StartStopTimer(void)
+// {
+//     if( (BLE_AudioLevel_NotifyEvent == BLE_NOTIFY_SUB) &&
+//             (!AudioLevelTimerEnabled) ) {
+//         int32_t Count;
+// 
+//         InitMics(AUDIO_IN_SAMPLING_FREQUENCY, AUDIO_VOLUME_INPUT);
+//         AudioLevelEnable= 1;
+// 
+//         for(Count=0;Count<AUDIO_IN_CHANNELS;Count++) {
+//             RMS_Ch[Count]=0;
+//             DBNOISE_Value_Old_Ch[Count] =0;
+//         }
+// 
+//         /* Start the TIM Base generation in interrupt mode (for mic audio level) */
+//         if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_2) != HAL_OK){
+//             /* Starting Error */
+//             Error_Handler();
+//         }
+// 
+//         /* Set the new Capture compare value */
+//         {
+//             uint32_t uhCapture = __HAL_TIM_GET_COUNTER(&TimCCHandle);
+//             /* Set the Capture Compare Register value (for mic audio level) */
+//             __HAL_TIM_SET_COMPARE(&TimCCHandle, TIM_CHANNEL_2, (uhCapture + uhCCR2_Val));
+//         }
+// 
+//         AudioLevelTimerEnabled= 1;
+//     }
+// 
+//     if( (BLE_AudioLevel_NotifyEvent == BLE_NOTIFY_UNSUB) &&
+//             (AudioLevelTimerEnabled) ) {
+//         DeInitMics();
+//         AudioLevelEnable= 0;
+// 
+//         /* Stop the TIM Base generation in interrupt mode (for mic audio level) */
+//         if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_2) != HAL_OK){
+//             /* Stopping Error */
+//             Error_Handler();
+//         }  
+// 
+//         AudioLevelTimerEnabled= 0;
+//     }
+// }
 
 /**
  * @brief  This function is called when there is a change on the gatt attribute for inertial
@@ -860,42 +862,40 @@ static void Inertial_StartStopTimer(void)
  * @param  None
  * @retval None
  */
-static void BatteryFeatures_StartStopTimer(void)
-{
-    if( (BLE_Battery_NotifyEvent == BLE_NOTIFY_SUB) && 
-            (!BatteryTimerEnabled) ){
-
-        BSP_BC_CmdSend(BATMS_ON);
-
-        /* Start the TIM Base generation in interrupt mode (for battery info) */
-        if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_4) != HAL_OK){
-            /* Starting Error */
-            Error_Handler();
-        }
-
-        /* Set the new Capture compare value */
-        {
-            uint32_t uhCapture = __HAL_TIM_GET_COUNTER(&TimCCHandle);
-            /* Set the Capture Compare Register value (for Acc/Gyro/Mag sensor) */
-            __HAL_TIM_SET_COMPARE(&TimCCHandle, TIM_CHANNEL_4, (uhCapture + uhCCR4_Val));
-        }
-
-        BatteryTimerEnabled= 1;
-    }
-
-    if( (BLE_Battery_NotifyEvent == BLE_NOTIFY_UNSUB) &&
-            (BatteryTimerEnabled) ) {
-        /* Stop the TIM Base generation in interrupt mode (for battery info) */
-        if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_4) != HAL_OK){
-            /* Stopping Error */
-            Error_Handler();
-        }
-
-        BatteryTimerEnabled= 0;
-
-        BSP_BC_CmdSend(BATMS_OFF);
-    }
-}
+// static void BatteryFeatures_StartStopTimer(void)
+// {
+//     if( (BLE_Battery_NotifyEvent == BLE_NOTIFY_SUB) && (!BatteryTimerEnabled) ){
+// 
+//         BSP_BC_CmdSend(BATMS_ON);
+// 
+//         /* Start the TIM Base generation in interrupt mode (for battery info) */
+//         if(HAL_TIM_OC_Start_IT(&TimCCHandle, TIM_CHANNEL_4) != HAL_OK){
+//             /* Starting Error */
+//             Error_Handler();
+//         }
+// 
+//         /* Set the new Capture compare value */
+//         {
+//             uint32_t uhCapture = __HAL_TIM_GET_COUNTER(&TimCCHandle);
+//             /* Set the Capture Compare Register value (for Acc/Gyro/Mag sensor) */
+//             __HAL_TIM_SET_COMPARE(&TimCCHandle, TIM_CHANNEL_4, (uhCapture + uhCCR4_Val));
+//         }
+// 
+//         BatteryTimerEnabled= 1;
+//     }
+// 
+//     if( (BLE_Battery_NotifyEvent == BLE_NOTIFY_UNSUB) && (BatteryTimerEnabled) ) {
+//         /* Stop the TIM Base generation in interrupt mode (for battery info) */
+//         if(HAL_TIM_OC_Stop_IT(&TimCCHandle, TIM_CHANNEL_4) != HAL_OK){
+//             /* Stopping Error */
+//             Error_Handler();
+//         }
+// 
+//         BatteryTimerEnabled= 0;
+// 
+//         BSP_BC_CmdSend(BATMS_OFF);
+//     }
+// }
 
 /***********************************
  * Software Characteristics Service *
@@ -907,21 +907,21 @@ static void BatteryFeatures_StartStopTimer(void)
  * @param  None
  * @retval None
  */
-static void FFTAmplitude_EnableDisableFeature(void)
-{
-    if(BLE_FFT_Amplitude_NotifyEvent == BLE_NOTIFY_SUB) {
-        PredictiveMaintenance= 1;
-        FFT_Amplitude= 1;
-    }
-
-    if(BLE_FFT_Amplitude_NotifyEvent == BLE_NOTIFY_UNSUB) {
-        disable_FIFO();
-        EnableDisable_ACC_HP_Filter(0);
-        PredictiveMaintenance= 0;
-        FFT_Amplitude= 0;
-        MotionSP_Running = 0;
-    }
-}
+// static void FFTAmplitude_EnableDisableFeature(void)
+// {
+//     if(BLE_FFT_Amplitude_NotifyEvent == BLE_NOTIFY_SUB) {
+//         PredictiveMaintenance= 1;
+//         FFT_Amplitude= 1;
+//     }
+// 
+//     if(BLE_FFT_Amplitude_NotifyEvent == BLE_NOTIFY_UNSUB) {
+//         disable_FIFO();
+//         EnableDisable_ACC_HP_Filter(0);
+//         PredictiveMaintenance= 0;
+//         FFT_Amplitude= 0;
+//         MotionSP_Running = 0;
+//     }
+// }
 
 /**
  * @brief  This function is called when there is a change on the gatt attribute for FFT Alarm Speed RMS
@@ -929,27 +929,27 @@ static void FFTAmplitude_EnableDisableFeature(void)
  * @param  None
  * @retval None
  */
-static void FFTAlarmSpeedRMSStatus_EnableDisableFeature(void)
-{
-    if(BLE_FFTAlarmSpeedStatus_NotifyEvent == BLE_NOTIFY_SUB) {
-        if(!PredictiveMaintenance)
-        {
-            PredictiveMaintenance= 1;
-            FFT_Alarm= 1;
-        }
-    }
-
-    if(BLE_FFTAlarmSpeedStatus_NotifyEvent == BLE_NOTIFY_UNSUB) {
-        if(PredictiveMaintenance)
-        {
-            disable_FIFO();
-            EnableDisable_ACC_HP_Filter(0);
-            PredictiveMaintenance= 0;
-            FFT_Alarm= 0;
-            MotionSP_Running = 0;
-        }
-    }
-}
+// static void FFTAlarmSpeedRMSStatus_EnableDisableFeature(void)
+// {
+//     if(BLE_FFTAlarmSpeedStatus_NotifyEvent == BLE_NOTIFY_SUB) {
+//         if(!PredictiveMaintenance)
+//         {
+//             PredictiveMaintenance= 1;
+//             FFT_Alarm= 1;
+//         }
+//     }
+// 
+//     if(BLE_FFTAlarmSpeedStatus_NotifyEvent == BLE_NOTIFY_UNSUB) {
+//         if(PredictiveMaintenance)
+//         {
+//             disable_FIFO();
+//             EnableDisable_ACC_HP_Filter(0);
+//             PredictiveMaintenance= 0;
+//             FFT_Alarm= 0;
+//             MotionSP_Running = 0;
+//         }
+//     }
+// }
 
 /**
  * @brief  This function is called when there is a change on the gatt attribute for FFT Alarm Acc Peak Status
@@ -957,27 +957,27 @@ static void FFTAlarmSpeedRMSStatus_EnableDisableFeature(void)
  * @param  None
  * @retval None
  */
-static void FFTAlarmAccPeakStatus_EnableDisableFeature(void)
-{
-    if(BLE_FFTAlarmAccPeakStatus_NotifyEvent == BLE_NOTIFY_SUB) {
-        if(!PredictiveMaintenance)
-        {
-            PredictiveMaintenance= 1;
-            FFT_Alarm= 1;
-        }
-    }
-
-    if(BLE_FFTAlarmAccPeakStatus_NotifyEvent == BLE_NOTIFY_UNSUB ){
-        if(PredictiveMaintenance)
-        {
-            disable_FIFO();
-            EnableDisable_ACC_HP_Filter(0);
-            PredictiveMaintenance= 0;
-            FFT_Alarm= 0;
-            MotionSP_Running = 0;
-        }
-    }
-}
+// static void FFTAlarmAccPeakStatus_EnableDisableFeature(void)
+// {
+//     if(BLE_FFTAlarmAccPeakStatus_NotifyEvent == BLE_NOTIFY_SUB) {
+//         if(!PredictiveMaintenance)
+//         {
+//             PredictiveMaintenance= 1;
+//             FFT_Alarm= 1;
+//         }
+//     }
+// 
+//     if(BLE_FFTAlarmAccPeakStatus_NotifyEvent == BLE_NOTIFY_UNSUB ){
+//         if(PredictiveMaintenance)
+//         {
+//             disable_FIFO();
+//             EnableDisable_ACC_HP_Filter(0);
+//             PredictiveMaintenance= 0;
+//             FFT_Alarm= 0;
+//             MotionSP_Running = 0;
+//         }
+//     }
+// }
 
 /**
  * @brief  This function is called when there is a change on the gatt attribute for FFT Alarm Subrange Status
@@ -985,27 +985,27 @@ static void FFTAlarmAccPeakStatus_EnableDisableFeature(void)
  * @param  None
  * @retval None
  */
-static void FFTAlarmSubrangeStatus_EnableDisableFeature(void)
-{
-    if(BLE_FFTAlarmSubrangeStatus_NotifyEvent == BLE_NOTIFY_SUB) {
-        if(!PredictiveMaintenance)
-        {
-            PredictiveMaintenance= 1;
-            FFT_Alarm= 1;
-        }
-    }
-
-    if(BLE_FFTAlarmSubrangeStatus_NotifyEvent == BLE_NOTIFY_UNSUB) {
-        if(PredictiveMaintenance)
-        {
-            disable_FIFO();
-            EnableDisable_ACC_HP_Filter(0);
-            PredictiveMaintenance= 0;
-            FFT_Alarm= 0;
-            MotionSP_Running = 0;
-        }
-    }
-}
+// static void FFTAlarmSubrangeStatus_EnableDisableFeature(void)
+// {
+//     if(BLE_FFTAlarmSubrangeStatus_NotifyEvent == BLE_NOTIFY_SUB) {
+//         if(!PredictiveMaintenance)
+//         {
+//             PredictiveMaintenance= 1;
+//             FFT_Alarm= 1;
+//         }
+//     }
+// 
+//     if(BLE_FFTAlarmSubrangeStatus_NotifyEvent == BLE_NOTIFY_UNSUB) {
+//         if(PredictiveMaintenance)
+//         {
+//             disable_FIFO();
+//             EnableDisable_ACC_HP_Filter(0);
+//             PredictiveMaintenance= 0;
+//             FFT_Alarm= 0;
+//             MotionSP_Running = 0;
+//         }
+//     }
+// }
 
 /**
  * @}
