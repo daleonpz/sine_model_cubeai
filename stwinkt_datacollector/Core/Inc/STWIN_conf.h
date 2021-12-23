@@ -77,7 +77,7 @@ modification in the application layer developed with older versions of the drive
 #define STBC02_USED_TIM_IRQ_PP          3  /*Battery Charger Interrupt priority*/
 
 /* Enable/Disable sensor on board */
-#define USE_MOTION_SENSOR_IIS2DH_0      0U
+#define USE_MOTION_SENSOR_IIS2DH_0      1U
 #define USE_MOTION_SENSOR_IIS2MDC_0     1U
 #define USE_MOTION_SENSOR_IIS3DWB_0     0U
 #define USE_MOTION_SENSOR_ISM330DHCX_0  1U
