@@ -61,7 +61,7 @@ typedef struct
 #define OTA_MAGIC_NUM 0xDEADBEEF
 
 /* Uncomment the following define for enabling the PRINTF capability if it's supported */
-#define OTA_ENABLE_PRINTF
+// #define OTA_ENABLE_PRINTF
 
 #ifdef OTA_ENABLE_PRINTF
   #define OTA_PRINTF PREDMNT1_PRINTF
