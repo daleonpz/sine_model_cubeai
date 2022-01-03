@@ -8,6 +8,7 @@ import collections
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import struct
+import sys
 # import pandas as pd
 
 
@@ -34,6 +35,7 @@ class serialPlot:
             print('Connected to ' + str(serialPort) + ' at ' + str(serialBaud) + ' BAUD.')
         except:
             print("Failed to connect with " + str(serialPort) + ' at ' + str(serialBaud) + ' BAUD.')
+            sys.exit(1)
 
     def readSerialStart(self):
         if self.thread == None:
@@ -43,7 +45,7 @@ class serialPlot:
             while self.isReceiving != True:
                 time.sleep(0.1)
 
-    def getSerialData(self, frame, lines_x, lines_y, lines_z, lineValueText, timeText):
+    def getSerialData(self, frame, ax,lines_x, lines_y, lines_z, lineValueText, timeText):
         currentTimer = time.perf_counter()
         self.plotTimer = int((currentTimer - self.previousTimer) * 1000)     # the first reading will be erroneous
         self.previousTimer = currentTimer
@@ -56,6 +58,8 @@ class serialPlot:
         lines_x.set_data(range(self.plotMaxLength), self.data_x)
         lines_y.set_data(range(self.plotMaxLength), self.data_y)
         lines_z.set_data(range(self.plotMaxLength), self.data_z)
+        ax.relim()
+        ax.autoscale_view()
 #         lineValueText.set_text('[' + lineLabel + '] = ' + str(value[0]))
         # self.csvData.append(self.data[-1])
 
@@ -87,19 +91,20 @@ class serialPlot:
 def main():
     portName = '/dev/ttyACM0'
     baudRate = 115200 
-    maxPlotLength = 100
+    maxPlotLength = 250
     dataNumBytes = 1        # number of bytes of 1 data point
     s = serialPlot(portName, baudRate, maxPlotLength, dataNumBytes)   # initializes all required variables
     s.readSerialStart()                                               # starts background thread
 
     # plotting starts below
-    pltInterval = 50    # Period at which the plot animation updates [ms]
+    pltInterval = 25    # Period at which the plot animation updates [ms]
     xmin = 0
     xmax = maxPlotLength
-    ymin = -(1000)
-    ymax = 1000
+    ymin = -(1500)
+    ymax = 1500
     fig = plt.figure()
-    ax = plt.axes(xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
+#     ax = plt.axes(xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
+    ax = plt.axes(xlim=(xmin, xmax))
     ax.set_title('Analog Read')
     ax.set_xlabel("time")
     ax.set_ylabel("AnalogRead Value")
@@ -109,7 +114,7 @@ def main():
     lines_y = ax.plot([], [], label="Y")[0]
     lines_z = ax.plot([], [], label="Z")[0]
     lineValueText = ax.text(0.50, 0.90, '', transform=ax.transAxes)
-    anim = animation.FuncAnimation(fig, s.getSerialData, fargs=(lines_x, lines_y, lines_z, lineValueText, timeText), interval=pltInterval)    # fargs has to be a tuple
+    anim = animation.FuncAnimation(fig, s.getSerialData, fargs=(ax, lines_x, lines_y, lines_z, lineValueText, timeText), interval=pltInterval, blit= False)    # fargs has to be a tuple
 
     plt.legend(loc="upper left")
     plt.show()
