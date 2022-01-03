@@ -3,7 +3,7 @@
 import serial
 import re
 import time
-import sys
+import sys, getopt
 import csv
 
 class serialCollector:
@@ -45,16 +45,40 @@ class serialCollector:
         print('Disconnected...')
 
 
-def main():
+def main(argv):
+
     portName = '/dev/ttyACM0'
     baudRate = 115200 
     sample_freq = 200
     sampling_time_sec = 2
     csv_filename = "test.csv"
+
+    try:
+         opts, args = getopt.getopt(argv,"p:b:f:s:F:",["port=",
+             "baudrate=", "sample_freq=", "sample_duration_sec=", "csv_filename="])
+    except getopt.GetoptError:
+        print('collect_data.py -d <csv_filename>')
+        sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt == '-h':
+            print('collect_data.py -d <csv_filename>')
+            sys.exit()
+        elif opt in ("-p", "--port"):
+            portName  = arg
+        elif opt in ("-b", "--baudrate"):
+            baudrate = arg
+        elif opt in ("-f", "--sample_freq"):
+            sample_freq = arg
+        elif opt in ("-s", "--sample_duration_sec"):
+            sampling_time_sec = arg
+        elif opt in ("-F", "--csv_filename"):
+            csv_filename = arg
+
+
     s = serialCollector(portName, baudRate, sample_freq, sampling_time_sec, csv_filename)
     s.readSerialStart()
     s.close()
 
-
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
