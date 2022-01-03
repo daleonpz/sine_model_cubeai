@@ -183,7 +183,7 @@ int main(void)
     Inertial_StartStopTimer();   
 
 
-    uint32_t num_samples_1_sek = FREQ_ACC_GYRO_MAG;
+    uint32_t num_samples_1_sek = 1; //FREQ_ACC_GYRO_MAG;
     uint32_t samples_count = 0;
     /* Infinite loop */
     while (1)
@@ -199,7 +199,7 @@ int main(void)
 //             _PRINTF("]\r\n");
             _PRINTF("\r\n");
             LedOffTargetPlatform();
-            HAL_Delay(1000); // 2sek
+//             HAL_Delay(1000); // 2sek
             samples_count = 0;
         }
         else {
