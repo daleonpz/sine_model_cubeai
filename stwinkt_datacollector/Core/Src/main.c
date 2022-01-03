@@ -307,14 +307,14 @@ static void SendMotionData(void)
     if(TargetBoardFeatures.AccSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(ACCELERO_INSTANCE, MOTION_ACCELERO, &ACC_Value);
-        _PRINTF("%d %d %d ", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
+        _PRINTF("%d, %d, %d ", ACC_Value.x, ACC_Value.y, ACC_Value.z);;
     }
 
     /* Read the Gyro values */
     if(TargetBoardFeatures.GyroSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(GYRO_INSTANCE,MOTION_GYRO, &GYR_Value);
-        _PRINTF("%d %d %d ", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
+        _PRINTF("%d, %d, %d ", GYR_Value.x, GYR_Value.y, GYR_Value.z);;
 //         PREDMNT1_PRINTF("Sending GYR: %d %d %d \r\n", GYR_Value.x/100, GYR_Value.y/100, GYR_Value.z/100); // from BLE_AccGyroMagUpdate
     }
 
@@ -322,7 +322,7 @@ static void SendMotionData(void)
     if(TargetBoardFeatures.MagSensorIsInit)
     {
         MOTION_SENSOR_GetAxes(MAGNETO_INSTANCE, MOTION_MAGNETO, &MAG_Value);
-        _PRINTF("%d %d %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
+        _PRINTF("%d, %d, %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
 
 //         _PRINTF(", %d, %d, %d ", MAG_Value.x, MAG_Value.y, MAG_Value.z);;
     }
