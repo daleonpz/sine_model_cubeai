@@ -136,7 +136,7 @@ extern volatile uint32_t PredictiveMaintenance;
 #define DEFAULT_uhCCR2_Val      (10000U / ALGO_FREQ_AUDIO_LEVEL)
     
 /* Update frequency for Acc/Gyro/Mag sensor [Hz] */
-#define FREQ_ACC_GYRO_MAG              5U 
+#define FREQ_ACC_GYRO_MAG              200U 
 /* Update period for Acc/Gyro/Mag [ms] */
 #define ALGO_PERIOD_ACC_GYRO_MAG        (1000U / FREQ_ACC_GYRO_MAG) 
 /* 10kHz/20  for Acc/Gyro/Mag @20Hz */
