@@ -29,10 +29,10 @@
 /* Private define ------------------------------------------------------------*/
 #define CHECK_VIBRATION_PARAM ((uint16_t)0x1234)
 
-// #include "ai_datatypes_defines.h"
-// #include "ai_platform.h"
-// #include "autoencoder_model.h"
-// #include "autoencoder_model_data.h"
+#include "ai_datatypes_defines.h"
+#include "ai_platform.h"
+#include "autoencoder_model.h"
+#include "autoencoder_model_data.h"
 
 
 /* Imported Variables -------------------------------------------------------------*/
@@ -71,6 +71,8 @@ uint8_t  NodeName[8];
 
 /* Private variables ---------------------------------------------------------*/
 uint16_t VibrationParam[11];
+
+CRC_HandleTypeDef hcrc;
 
 /* Table with All the known Meta Data */
 MDM_knownGMD_t known_MetaData[]={
@@ -116,6 +118,32 @@ static void FFTAlarmSpeedRMSStatus_EnableDisableFeature(void);
 static void FFTAlarmAccPeakStatus_EnableDisableFeature(void);
 static void FFTAlarmSubrangeStatus_EnableDisableFeature(void);
 
+static void MX_CRC_Init(void);
+
+static ai_handle autoencoder_model_h = AI_HANDLE_NULL;
+AI_ALIGNED(32) 
+    static ai_u8 activations[AI_AUTOENCODER_MODEL_DATA_ACTIVATIONS_SIZE];
+
+AI_ALIGNED(32) 
+    static ai_i32 in_data[AI_AUTOENCODER_MODEL_IN_1_SIZE];
+//     static ai_float in_data[AI_AUTOENCODER_MODEL_IN_1_SIZE];
+/* or static ai_u8 in_data[AI_NETWORK_IN_1_SIZE_BYTES]; */
+
+AI_ALIGNED(32) 
+    static ai_i32 out_data[AI_AUTOENCODER_MODEL_OUT_1_SIZE];
+
+//     static ai_float out_data[AI_AUTOENCODER_MODEL_OUT_1_SIZE];
+
+
+static ai_buffer *ai_input;
+static ai_buffer *ai_output;
+
+int aiInit(void) ;
+int aiRun(const void *in_data, void *out_data) ;
+void acquire_and_process_data(const void *in_data);
+// void  post_process(void *out_data);
+void  post_process(void *out_data, void *in_data);
+
 
 /**
  * @brief  Main program
@@ -137,53 +165,8 @@ int main(void)
 
     t_stwin = HAL_GetTick();
 
-    // AI MODEL
-//     ai_error ai_err;
-//     ai_i32 nbatch;
-    // Chunk of memory used to hold intermediate values for neural network
-//     AI_ALIGNED(4) ai_u8 activations[AI_AUTOENCODER_MODEL_DATA_ACTIVATIONS_SIZE];
-
-    // Buffers used to store input and output tensors
-//     AI_ALIGNED(4) ai_i8 in_data[AI_AUTOENCODER_MODEL_IN_1_SIZE_BYTES];
-//     AI_ALIGNED(4) ai_i8 out_data[AI_AUTOENCODER_MODEL_OUT_1_SIZE_BYTES];
-
-    // Pointer to our model
-//     ai_handle autoencoder_model_h = AI_HANDLE_NULL;
-
-    // Initialize wrapper structs that hold pointers to data and info about the
-    // data (tensor height, width, channels)
-//     ai_buffer ai_input[AI_AUTOENCODER_MODEL_IN_NUM ] = AI_AUTOENCODER_MODEL_IN;
-// #define AI_AUTOENCODER_MODEL_IN  ai_autoencoder_model_inputs_get(AI_HANDLE_NULL, NULL)
-// ai_buffer* ai_autoencoder_model_inputs_get(ai_handle network, ai_u16 *n_buffer)
-
-// ai_buffer* ai_autoencoder_model_outputs_get(ai_handle network, ai_u16 *n_buffer)
-
-//     ai_buffer ai_output[AI_AUTOENCODER_MODEL_OUT_NUM] = AI_AUTOENCODER_MODEL_OUT;
-
-    // Set working memory and get weights/biases from model
-//     ai_network_params ai_params = AI_NETWORK_PARAMS_INIT(
-//             AI_AUTOENCODER_MODEL_DATA_WEIGHTS(ai_autoencoder_model_data_weights_get()), 
-//             AI_AUTOENCODER_MODEL_DATA_ACTIVATIONS(activations)
-//             );
-// 
-//     typedef struct ai_buffer_ {
-//   ai_buffer_format        format;     /*!< buffer format */
-//   ai_handle               data;       /*!< pointer to buffer data */
-//   ai_buffer_meta_info*    meta_info;  /*!< pointer to buffer metadata info */
-//   /* New 7.1 fields */
-//   ai_flags                flags;      /*!< shape optional flags */
-//   ai_size                 size;       /*!< number of elements of the buffer (including optional padding) */
-//   ai_buffer_shape         shape;      /*!< n-dimensional shape info */
-// } ai_buffer;
-
-
-    // Set pointers wrapper structs to our data buffers
-//     ai_input[0].n_batches = 1;
-//     ai_input[0].data = AI_HANDLE_PTR(in_data);
-//     ai_output[0].n_batches = 1;
-//     ai_output[0].data = AI_HANDLE_PTR(out_data);
+    MX_CRC_Init();
     /* USER CODE END 1 */
-
 
     /* Check the MetaDataManager */
     InitMetaDataManager((void *)&known_MetaData,MDM_DATA_TYPE_GMD,NULL); 
@@ -240,20 +223,7 @@ int main(void)
 //     Environmental_StartStopTimer();
     Inertial_StartStopTimer();   
 
-    // Create instance of neural network
-//     ai_err = ai_autoencoder_model_create(&autoencoder_model_h, AI_AUTOENCODER_MODEL_DATA_CONFIG);
-//     if (ai_err.type != AI_ERROR_NONE)
-//     {
-//         PREDMNT1_PRINTF("Error: could not create NN instance\r\n\n");
-//         while(1);
-//     }
-
-    // Initialize neural network
-//     if (!ai_autoencoder_model_init(autoencoder_model_h, &ai_params))
-//     {
-//         PREDMNT1_PRINTF("Error: could not initialize NN \r\n\n");
-//         while(1);
-//     }
+    aiInit();
 
     // Initial readings
 //     LedOnTargetPlatform();
@@ -271,7 +241,7 @@ int main(void)
 //     LedOffTargetPlatform();
 
     // Threshold: 0.14067855  / 18.0068544  (i need to check that) 
-    float threshold = 0.14067855; 
+//     float threshold = 0.14067855; 
     // TODO: calculate PCA
     /* Infinite loop */
     while (1)
@@ -290,10 +260,12 @@ int main(void)
 //         }
 //              
 //         LedOffTargetPlatform();
-
+        
 //         for (uint32_t i = 0; i < AI_AUTOENCODER_MODEL_IN_1_SIZE; i++)
 //         {
 //             ((ai_float *)in_data)[i] = (ai_float)2.0f;
+//             in_data[i] = (ai_i32)50;
+
 //         }
 
 
@@ -309,12 +281,33 @@ int main(void)
 
         // Perform inference
         // ai_input[0].data = AI_HANDLE_PTR(in_data); ( handler to input data of 400 )
-//         nbatch = ai_autoencoder_model_run(autoencoder_model_h, &ai_input[0], &ai_output[0]);
-//         if (nbatch != 1) 
-//         {
-//             PREDMNT1_PRINTF("Error: could not run inference\r\n");
-//         }
+//         ai_i32 nbatch = 0;
+//         _PRINTF("run inference....\r\n");
+// // 
+        LedOnTargetPlatform();
+        /* USER CODE END WHILE */
+        acquire_and_process_data(in_data);
+        aiRun(in_data, out_data);
+        post_process(out_data, in_data);
 
+//         post_process(out_data);
+        /* USER CODE BEGIN 3 */
+//         nbatch = ai_autoencoder_model_run(autoencoder_model_h, &ai_input[0], &ai_output[0]);
+//         if (nbatch <= 0) 
+//         {
+//             _PRINTF("Error: could not run inference\r\n");
+//         }
+// 
+        LedOffTargetPlatform();
+
+        // For the Sine ----------------------
+//         float y_val = 0;
+//         y_val = ((float *)out_data)[0];
+//         _PRINTF("Sine : %f\r\n", y_val);
+        HAL_Delay(50);
+
+        //--------------------------------
+// 
         // Read output (predicted y) of neural network
 //         float y_val[AI_AUTOENCODER_MODEL_OUT_1_SIZE_BYTES];
         // TODO: calculate the MSE between input and output 
@@ -323,6 +316,7 @@ int main(void)
 //         for( uint32_t k=0; k < AI_AUTOENCODER_MODEL_OUT_1_SIZE; k++)
 //         {
 //             mse += fabsf( ((float*)out_data)[k] - ((float*)in_data)[k] );
+// //             mse += fabsf( ((float*)in_data)[k] - ((float*)in_data)[k] );
 //         }
 //         mse = sqrtf(mse);
 // 
@@ -337,7 +331,7 @@ int main(void)
 //             PREDMNT1_PRINTF(" MAINTENANCE REQUIRED!!!!!!! \r\n");
 //         }
 // 
-// 
+
 
 //         y_val = ((float *)out_data)[0];
 
@@ -355,6 +349,120 @@ int main(void)
 
     }
 }
+
+/* 
+ *  * Bootstrap
+ *   */
+int aiInit(void) 
+{
+    ai_error err;
+
+    /* Create and initialize the c-model */
+    const ai_handle acts[] = { activations };
+    err = ai_autoencoder_model_create_and_init(&autoencoder_model_h, acts, NULL);
+    if (err.type != AI_ERROR_NONE) 
+    { 
+        _PRINTF("Error: could not create NN. type=%d code=%d\r\n", err.type, err.code);
+        while(1); 
+    };
+
+    /* Reteive pointers to the model's input/output tensors */
+    ai_input = ai_autoencoder_model_inputs_get(autoencoder_model_h, NULL);
+    ai_output = ai_autoencoder_model_outputs_get(autoencoder_model_h, NULL);
+    
+    return 0;
+}
+
+/* 
+ *  * Run inference
+ *   */
+int aiRun(const void *in_data, void *out_data) 
+{
+    ai_i32 n_batch;
+    ai_error err;
+
+    /* 1 - Update IO handlers with the data payload */
+    ai_input[0].data = AI_HANDLE_PTR(in_data);
+    ai_output[0].data = AI_HANDLE_PTR(out_data);
+
+    /* 2 - Perform the inference */
+    n_batch = ai_autoencoder_model_run(autoencoder_model_h, &ai_input[0], &ai_output[0]);
+    if (n_batch != 1) 
+    {
+        err = ai_autoencoder_model_get_error(autoencoder_model_h);
+        _PRINTF("Error: could not run model. type=%d code=%d\r\n", err.type, err.code);
+    };
+
+
+    return 0;
+}
+
+
+void acquire_and_process_data(const void *in_data)
+{
+    for (uint32_t i = 0; i < AI_AUTOENCODER_MODEL_IN_1_SIZE; i++)
+    {
+        // due to void input
+        ((ai_i32*)in_data)[i] = (ai_i32)50;
+//         ((ai_float *)in_data)[i] = (ai_float)2.0f;
+    }
+}
+
+// void  post_process(void *out_data)
+void  post_process(void *out_data, void *in_data)
+{
+    // For the Sine ----------------------
+//     float y_val = 0;
+//     y_val = ((float *)out_data)[0];
+// 
+//     _PRINTF("Sine : %f\r\n", y_val);
+// 
+    float threshold = 0.14067855; 
+
+//     float y_val[AI_AUTOENCODER_MODEL_OUT_1_SIZE];
+    // TODO: calculate the MSE between input and output 
+    // Threshold: 0.14067855  / 18.0068544  (i need to check that) 
+    float  mse = 0;
+
+    ai_i32 *in_data_i32 = (ai_i32*) in_data;
+    float *out_data_float = (float*) out_data;
+
+    for( uint32_t k=0; k < AI_AUTOENCODER_MODEL_OUT_1_SIZE; k++)
+    {
+        mse += fabsf( out_data_float[k] - (float)(in_data_i32[k]));
+//         _PRINTF("MSE: out_data : %f \t in_data: %d \t mse_acc  %f\r\n", 
+//                 out_data_float[k], in_data_i32[k],  mse);
+
+    }
+    mse = sqrtf(mse);
+
+    _PRINTF("MSE: %f\r\n", mse);
+
+    if( mse <= threshold )
+    {
+        PREDMNT1_PRINTF(" OK! \r\n");
+    }
+    else
+    {
+        PREDMNT1_PRINTF(" MAINTENANCE REQUIRED!!!!!!! \r\n");
+    }
+}
+
+
+static void MX_CRC_Init(void)
+{
+    hcrc.Instance = CRC;
+    hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+    hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+    hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+    hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+    hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+    if (HAL_CRC_Init(&hcrc) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+
 
 /**
  * @brief  Send Motion Data Acc/Mag/Gyro to BLE
@@ -597,7 +705,7 @@ static void InitTimers(void)
 
     /* Set TIM1 instance ( Motion ) */
     TimCCHandle.Instance = TIM1;  
-    TimCCHandle.Init.Period        = 65535;
+    TimCCHandle.Init.Period        =65535;
     TimCCHandle.Init.Prescaler     = uwPrescalerValue;
     TimCCHandle.Init.ClockDivision = 0;
     TimCCHandle.Init.CounterMode   = TIM_COUNTERMODE_UP;
