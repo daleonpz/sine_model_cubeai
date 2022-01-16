@@ -26,7 +26,7 @@
 /*************** Debug Defines ******************/
 /* For enabling the printf on UART */
 #define PREDMNT1_ENABLE_PRINTF        (1)
-// #define PREDMNT1_ACTIVATE_PRINTF        (1)
+#define PREDMNT1_ACTIVATE_PRINTF        (1)
 
 /* For enabling connection and notification subscriptions debug */
 // #define PREDMNT1_DEBUG_CONNECTION      (1)
