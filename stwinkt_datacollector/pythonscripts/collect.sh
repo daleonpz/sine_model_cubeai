@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd data/ || return
 foldername="rasiermaschine_50_rpm_anomalities"
 mkdir $foldername 
 cd $foldername || return
@@ -14,4 +15,5 @@ done
 
 echo "All done"
 
-cd .. || exit
+cd .. || exit # From ${foldername}
+cd .. || exit # From data
